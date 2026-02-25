@@ -5,22 +5,18 @@ import plotly.graph_objects as go
 import plotly.express as px
 import sys
 
-# Append source directory
 sys.path.append('src')
 
-# Import custom quantitative modules
 from data import download_data, calculate_returns
 from portfolio import create_portfolio, portfolio_stats, efficient_frontier
 from var_models import historical_var, parametric_var, monte_carlo_var, backtest_var, cvar
 
-# --- Page Configuration ---
 st.set_page_config(
     page_title="Quantitative Risk Terminal",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# --- Advanced CSS Injection ---
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap');
@@ -107,7 +103,6 @@ html, body, [class*="css"] {
 </style>
 """, unsafe_allow_html=True)
 
-# --- UI Helper Functions ---
 def metric_card(title, value, subtitle, sub_class=""):
     st.markdown(f"""
         <div class="metric-container">
@@ -117,7 +112,6 @@ def metric_card(title, value, subtitle, sub_class=""):
         </div>
     """, unsafe_allow_html=True)
 
-# --- Data Processing Logic ---
 @st.cache_data(show_spinner=False)
 def load_and_process_data(tickers, start_date, end_date, weights_decimal):
     prices = download_data(tickers, str(start_date), str(end_date))
@@ -131,7 +125,6 @@ def calculate_drawdowns(returns):
     drawdowns = (cumulative - running_max) / running_max
     return drawdowns
 
-# --- Sidebar Configuration ---
 with st.sidebar:
     st.markdown("<h2 style='color: #e6edf3; font-size: 1.1rem; font-weight: 600; margin-bottom: 20px;'>PORTFOLIO SETUP</h2>", unsafe_allow_html=True)
     
@@ -159,7 +152,6 @@ with st.sidebar:
     st.markdown("<br>", unsafe_allow_html=True)
     run_analysis = st.button("Compute Risk Metrics", type="primary", use_container_width=True)
 
-# --- Validation Engine ---
 if round(sum(weights_decimal), 5) != 1.0:
     st.error(f"Allocation Error: Sum of weights equals {sum(weights)}%. Must equal 100%.")
     st.stop()
@@ -177,7 +169,6 @@ if not run_analysis:
     """, unsafe_allow_html=True)
     st.stop()
 
-# --- Execution Engine ---
 with st.spinner("Aggregating timeseries and calculating risk parameters..."):
     prices, returns, port_ret = load_and_process_data(tickers, start_date, end_date, weights_decimal)
     stats = portfolio_stats(port_ret)
@@ -192,7 +183,6 @@ with st.spinner("Aggregating timeseries and calculating risk parameters..."):
     
     ef_df, min_v, max_s = efficient_frontier(returns)
 
-# --- Header ---
 st.markdown("""
     <div style="display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 20px; border-bottom: 1px solid #30363d; margin-bottom: 30px;">
         <div>
@@ -201,17 +191,14 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# --- KPI Tier ---
 col1, col2, col3, col4 = st.columns(4)
 with col1: metric_card("Annualized Return", f"{stats['Retorno anualizado']*100:.2f}%", "Geometrically linked", "positive" if stats['Retorno anualizado'] > 0 else "negative")
 with col2: metric_card("Annualized Volatility", f"{stats['Volatilidade anualizada']*100:.2f}%", "Standard Deviation", "")
 with col3: metric_card("Sharpe Ratio", f"{stats['Retorno anualizado']/stats['Volatilidade anualizada']:.3f}", "Risk-Adjusted Premium", "positive")
 with col4: metric_card("Maximum Drawdown", f"{max_dd*100:.2f}%", "Peak-to-Trough Decline", "negative")
 
-# --- Interface Tabs ---
 tab_risk, tab_perf, tab_ef = st.tabs(["Value at Risk & Shortfall", "Performance & Backtesting", "Markowitz Optimization"])
 
-# --- TAB 1: Risk Models ---
 with tab_risk:
     st.markdown("<div class='section-header'>Tail Risk Distribution (VaR & CVaR)</div>", unsafe_allow_html=True)
     
@@ -238,7 +225,6 @@ with tab_risk:
     with c2:
         metric_card("Expected Shortfall (CVaR 99%)", f"{cv['CVaR 99%']['cvar']*100:.2f}%", f"Average conditional loss over {cv['CVaR 99%']['n_days_beyond']} events", "negative")
 
-# --- TAB 2: Performance & Backtesting ---
 with tab_perf:
     st.markdown("<div class='section-header'>Historical Equity & Drawdown Profile</div>", unsafe_allow_html=True)
     
@@ -300,7 +286,6 @@ with tab_perf:
             </div>
         """, unsafe_allow_html=True)
 
-# --- TAB 3: Markowitz Optimization ---
 with tab_ef:
     st.markdown("<div class='section-header'>Efficient Frontier & Capital Allocation Line</div>", unsafe_allow_html=True)
     
