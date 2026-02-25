@@ -21,6 +21,46 @@ def portfolio_stats(portfolio_returns):
     }
     return stats
 
+def efficient_frontier(returns, n_portfolios=10000):
+    n_assets = len(returns.columns)
+    results = {
+        "weights": [],
+        "returns": [],
+        "volatility": [],
+        "sharpe": []
+    }
+
+    np.random.seed(42)
+
+    for _ in range(n_portfolios):
+        w = np.random.random(n_assets)
+        w = w / w.sum()
+
+        port_return = np.dot(w, returns.mean()) * 252
+        port_vol = np.sqrt(np.dot(w.T, np.dot(returns.cov() * 252, w)))
+        sharpe = port_return / port_vol
+
+        results["weights"].append(w)
+        results["returns"].append(port_return)
+        results["volatility"].append(port_vol)
+        results["sharpe"].append(sharpe)
+
+    results_df = pd.DataFrame({
+        "Return": results["returns"],
+        "Volatility": results["volatility"],
+        "Sharpe": results["sharpe"],
+    })
+    results_df["Weights"] = results["weights"]
+
+    min_var_idx = results_df["Volatility"].idxmin()
+    min_var = results_df.loc[min_var_idx]
+
+    max_sharpe_idx = results_df["Sharpe"].idxmax()
+    max_sharpe = results_df.loc[max_sharpe_idx]
+
+    return results_df, min_var, max_sharpe
+
+
 if __name__ == "__main__":
     from data import download_data, calculate_returns
 
@@ -39,3 +79,17 @@ if __name__ == "__main__":
     stats = portfolio_stats(portfolio_returns)
     for k, v in stats.items():
         print(f"{k}: {v:.4f}")
+        
+        
+    ef_df, min_var, max_sharpe = efficient_frontier(returns)
+
+    print("\nEFFICIENT FRONTIER")
+    print(f"Portfolios simulados: {len(ef_df)}")
+    print(f"\nMínima Variância:")
+    print(f"  Retorno:     {min_var['Return']*100:.2f}%")
+    print(f"  Volatilidade:{min_var['Volatility']*100:.2f}%")
+    print(f"  Sharpe:      {min_var['Sharpe']:.3f}")
+    print(f"\nMáximo Sharpe:")
+    print(f"  Retorno:     {max_sharpe['Return']*100:.2f}%")
+    print(f"  Volatilidade:{max_sharpe['Volatility']*100:.2f}%")
+    print(f"  Sharpe:      {max_sharpe['Sharpe']:.3f}")
