@@ -36,7 +36,7 @@ def monte_carlo_var(portfolio_returns, confidence_level=[0.95, 0.99] , n_simulat
     results = {}
 
     for confidence in confidence_level:
-        var = np.percentile(simulated_returns.values, (1 - confidence) * 100)
+        var = np.percentile(simulated_returns, (1 - confidence) * 100)
         results[f"VaR {int(confidence * 100)}%"] = var
 
     return results, simulated_returns
