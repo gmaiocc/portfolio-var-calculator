@@ -6,7 +6,7 @@ def historical_var(portfolio_returns, confidence_levels=[0.95, 0.99]):
     results = {}
 
     for confidence in confidence_levels:
-        var = np.percentile(portfolio_returns, (1 - confidence) * 100)
+        var = np.percentile(portfolio_returns.values, (1 - confidence) * 100)
         results[f"VaR {int(confidence*100)}%"] = var
 
     return results
@@ -36,7 +36,7 @@ def monte_carlo_var(portfolio_returns, confidence_level=[0.95, 0.99] , n_simulat
     results = {}
 
     for confidence in confidence_level:
-        var = np.percentile(simulated_returns, (1 - confidence) * 100)
+        var = np.percentile(simulated_returns.values, (1 - confidence) * 100)
         results[f"VaR {int(confidence * 100)}%"] = var
 
     return results, simulated_returns
@@ -74,7 +74,7 @@ def backtest_var(portfolio_returns, confidence_levels=[0.95, 0.99], train_ratio 
     
     for confidence in confidence_levels:
         
-        var = np.percentile(train, (1 - confidence) * 100)
+        var = np.percentile(train.values, (1 - confidence) * 100)
         
         exceptions = test[test < var]
         n_exceptions = len(exceptions)
@@ -150,7 +150,7 @@ def cvar(portfolio_returns, confidence_levels=[0.95, 0.99]):
     
     for confidence in confidence_levels:
         
-        var = np.percentile(portfolio_returns, (1 - confidence) * 100)
+        var = np.percentile(portfolio_returns.values, (1 - confidence) * 100)
         
         losses_beyond_var = portfolio_returns[portfolio_returns < var]
         cvar_value = losses_beyond_var.mean()
